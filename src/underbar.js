@@ -97,7 +97,7 @@
   _.uniq = function(array) {
     var uniqArray = [];
     _.each(array, function(val) {
-      if ( _.indexOf(uniqArray, val) === -1 ) { uniqArray.push(val); }
+      if (!_.contains(uniqArray, val)) { uniqArray.push(val); }
     });
     return uniqArray;
   };
@@ -154,7 +154,15 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-
+    var current = accumulator;
+    if (accumulator === undefined) {
+      current = collection[0];
+      collection = collection.slice(1, collection.length);
+    }
+    _.each(collection, function(val) {
+      current = iterator(current, val);
+    })
+    return current;
   };
 
   // Determine if the array or object contains a given value (using `===`).
