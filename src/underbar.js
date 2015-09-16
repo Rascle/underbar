@@ -180,13 +180,21 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    if (collection.length === 0) { return true; }
+    iterator = iterator || _.identity;
+    return Boolean(_.reduce(collection, function(last, next) {
+      return iterator(next) && last;
+    }, true));
     // TIP: Try re-using reduce() here.
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
-    // TIP: There's a very clever way to re-use every() here.
+    iterator = iterator || _.identity;
+    return(!_.every(collection, function(val) {
+      return !iterator(val);
+    }))
   };
 
 
@@ -209,11 +217,27 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var args = Array.prototype.slice.call(arguments);
+    _.each(args, function(objAdd) {
+      _.each(objAdd, function(val, key) {
+        obj[key] = objAdd[key];
+      });
+    });
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var args = Array.prototype.slice.call(arguments);
+    _.each(args, function(objAdd) {
+      _.each(objAdd, function(val, key) {
+        if((key in obj) === false) {
+          obj[key] = objAdd[key];
+        }
+      });
+    });
+    return obj;
   };
 
 
@@ -257,6 +281,29 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    /*
+    create argArray to push arguments to
+    create resultArray to push results to
+    if the current argument of function is NOT in argArray
+      run function and:
+        push arg to argArray
+        push result to resultArray
+        return result
+    else return resultArray[argArray.indexOf(argument)];
+    */
+    var argArray = [];
+    var resultArray = [];
+    var result;
+
+    return function() {
+      if (!_.contains(argArray, arguments[0])) {
+        result = func.apply(this, arguments[0]);
+        resultArray.push(result);
+        argArray.push(arguments[0]);
+      } else {
+        return resultArray[argArray.indexOf(arguments[0])];
+      }
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
