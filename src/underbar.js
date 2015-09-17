@@ -282,26 +282,24 @@
   // instead if possible.
   _.memoize = function(func) {
     /*
-    create argArray to push arguments to
-    create resultArray to push results to
-    if the current argument of function is NOT in argArray
+    created an object (create argArray to push arguments to
+    create resultArray to push results to)
+    if the current argument of function are NOT
       run function and:
         push arg to argArray
         push result to resultArray
         return result
     else return resultArray[argArray.indexOf(argument)];
     */
-    var argArray = [];
-    var resultArray = [];
-    var result;
+    var memos = {};
 
     return function() {
-      if (!_.contains(argArray, arguments[0])) {
-        result = func.apply(this, arguments[0]);
-        resultArray.push(result);
-        argArray.push(arguments[0]);
+      var args = [].slice.call(arguments);
+      if (!(args in memos)) {
+        memos[args] = func.apply(this, args);
+        return memos[args];
       } else {
-        return resultArray[argArray.indexOf(arguments[0])];
+        return memos[args];
       }
     };
   };
@@ -313,6 +311,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = [].slice.call(arguments, 2)
+    setTimeout(function() {
+      return func.apply(this, args);
+    }, wait);
   };
 
 
@@ -327,6 +329,14 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var shuffleArray = array.slice(0, array.length);
+    var arrayEnd = array.length;
+    _.each(array, function(val) {
+      var randomNumber = Math.floor(Math.random() * (arrayEnd));
+      shuffleArray.push(shuffleArray.splice(randomNumber, 1)[0]);
+      arrayEnd --;
+    });
+    return shuffleArray;
   };
 
 
